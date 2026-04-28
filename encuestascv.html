@@ -1,0 +1,1275 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Encuesta de Satisfacción – Ciudad Bienestar 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,900;1,300&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet" />
+    <style>
+        :root {
+            --verde: #1a5c45;
+            --verde-claro: #2d8c68;
+            --verde-suave: #e8f5ef;
+            --dorado: #c8a84b;
+            --dorado-suave: #fdf6e3;
+            --texto: #1a1a2e;
+            --gris: #6b7280;
+            --blanco: #ffffff;
+            --sombra: 0 4px 24px rgba(26, 92, 69, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "DM Sans", sans-serif;
+            background: #f0f7f4;
+            min-height: 100vh;
+            color: var(--texto);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Fondo decorativo */
+        body::before {
+            content: "";
+            position: fixed;
+            top: -200px;
+            right: -200px;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle,
+                    rgba(200, 168, 75, 0.1) 0%,
+                    transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            bottom: -150px;
+            left: -150px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle,
+                    rgba(26, 92, 69, 0.08) 0%,
+                    transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 40px 20px 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* HEADER */
+        .header {
+            background: var(--verde);
+            border-radius: 20px 20px 0 0;
+            padding: 48px 40px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .logo-area {
+            display: inline-flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 50px;
+        }
+
+        .logo-icon {
+            width: 180px;
+            /* más ancho */
+            height: 70px;
+            /* ligeramente más alto */
+            background: #ffffff;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .logo-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            /* mantiene proporción */
+        }
+
+        .logo-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            /* mantiene proporción */
+        }
+
+        .header h1 {
+            font-family: "Fraunces", serif;
+            font-weight: 900;
+            font-size: clamp(1.4rem, 4vw, 2rem);
+            color: var(--blanco);
+            line-height: 1.2;
+            position: relative;
+        }
+
+        .header .subtitulo {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.75);
+            margin-top: 12px;
+            line-height: 1.6;
+            max-width: 560px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--dorado);
+            color: #1a1a00;
+            font-size: 0.72rem;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 4px 14px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        /* INSTRUCCIONES */
+        .instrucciones {
+            background: var(--dorado-suave);
+            border-left: 4px solid var(--dorado);
+            padding: 16px 20px;
+            font-size: 0.85rem;
+            color: #5a4a00;
+            line-height: 1.7;
+        }
+
+        /* CARD DEL FORMULARIO */
+        .form-card {
+            background: var(--blanco);
+            border-radius: 0 0 20px 20px;
+            box-shadow: var(--sombra);
+            overflow: hidden;
+        }
+
+        /* STEPS NAV */
+        .steps-nav {
+            display: flex;
+            background: #f8faf9;
+            border-bottom: 1px solid #e5ede9;
+            padding: 0;
+        }
+
+        .step-tab {
+            flex: 1;
+            padding: 16px 8px;
+            text-align: center;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--gris);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            cursor: default;
+        }
+
+        .step-tab.active {
+            color: var(--verde);
+            border-bottom-color: var(--verde);
+            background: var(--blanco);
+        }
+
+        .step-tab.done {
+            color: var(--verde-claro);
+        }
+
+        .step-tab .num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #e5ede9;
+            color: var(--gris);
+            font-size: 0.72rem;
+            margin-right: 6px;
+            transition: all 0.3s;
+        }
+
+        .step-tab.active .num {
+            background: var(--verde);
+            color: #fff;
+        }
+
+        .step-tab.done .num {
+            background: var(--verde-claro);
+            color: #fff;
+        }
+
+        /* SECCIONES */
+        .seccion {
+            display: none;
+            padding: 36px 40px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .seccion.activa {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .seccion-titulo {
+            font-family: "Fraunces", serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--verde);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .seccion-titulo .icono {
+            font-size: 1.2rem;
+        }
+
+        .seccion-desc {
+            font-size: 0.85rem;
+            color: var(--gris);
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eef2ef;
+        }
+
+        /* CAMPOS */
+        .campo {
+            margin-bottom: 24px;
+        }
+
+        .campo label {
+            display: block;
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--texto);
+            margin-bottom: 8px;
+        }
+
+        .campo label .req {
+            color: #e53e3e;
+            margin-left: 3px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #d1ddd8;
+            border-radius: 10px;
+            font-family: "DM Sans", sans-serif;
+            font-size: 0.9rem;
+            color: var(--texto);
+            background: #fafcfb;
+            transition: all 0.2s;
+            outline: none;
+            appearance: none;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--verde);
+            background: var(--blanco);
+            box-shadow: 0 0 0 3px rgba(26, 92, 69, 0.08);
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        /* Radio grupos */
+        .radio-grupo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .radio-grupo label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border: 1.5px solid #d1ddd8;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 400;
+            color: var(--texto);
+            transition: all 0.2s;
+            margin-bottom: 0;
+        }
+
+        .radio-grupo input[type="radio"] {
+            display: none;
+        }
+
+        .radio-grupo label:has(input:checked) {
+            background: var(--verde-suave);
+            border-color: var(--verde);
+            color: var(--verde);
+            font-weight: 500;
+        }
+
+        /* Campo "otro cual" */
+        .otro-campo {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .otro-campo.visible {
+            display: block;
+        }
+
+        /* TABLA LIKERT */
+        .likert-wrap {
+            overflow-x: auto;
+            margin-top: 4px;
+        }
+
+        .likert-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 560px;
+        }
+
+        .likert-table thead th {
+            padding: 10px 8px;
+            text-align: center;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--gris);
+            border-bottom: 2px solid #e5ede9;
+            letter-spacing: 0.3px;
+        }
+
+        .likert-table thead th:first-child {
+            text-align: left;
+            padding-left: 12px;
+        }
+
+        .likert-table tbody tr {
+            border-bottom: 1px solid #f0f5f2;
+        }
+
+        .likert-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .likert-table tbody td {
+            padding: 14px 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .likert-table tbody td:first-child {
+            text-align: left;
+            font-size: 0.87rem;
+            padding-left: 12px;
+            color: var(--texto);
+            line-height: 1.4;
+        }
+
+        .likert-table tbody tr:hover {
+            background: var(--verde-suave);
+        }
+
+        .likert-radio {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--verde);
+            cursor: pointer;
+        }
+
+        /* PERCEPCION */
+        .puntuacion-wrap {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .star-btn {
+            background: none;
+            border: 2px solid #d1ddd8;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #ccc;
+        }
+
+        .star-btn.activa {
+            background: var(--dorado-suave);
+            border-color: var(--dorado);
+            color: var(--dorado);
+            transform: scale(1.05);
+        }
+
+        /* BOTONES */
+        .botones {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 36px;
+            padding-top: 24px;
+            border-top: 1px solid #eef2ef;
+        }
+
+        .btn {
+            padding: 13px 28px;
+            border-radius: 10px;
+            font-family: "DM Sans", sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secundario {
+            background: #f0f5f2;
+            color: var(--verde);
+        }
+
+        .btn-secundario:hover {
+            background: #e0ede6;
+        }
+
+        .btn-primario {
+            background: var(--verde);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(26, 92, 69, 0.3);
+        }
+
+        .btn-primario:hover {
+            background: var(--verde-claro);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(26, 92, 69, 0.35);
+        }
+
+        .btn-primario:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* PROGRESS BAR */
+        .progress-bar-wrap {
+            height: 4px;
+            background: #e5ede9;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--verde), var(--dorado));
+            transition: width 0.4s ease;
+        }
+
+        /* ÉXITO */
+        .exito {
+            display: none;
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .exito.visible {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .exito-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--verde-suave);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto 24px;
+        }
+
+        .exito h2 {
+            font-family: "Fraunces", serif;
+            font-size: 1.8rem;
+            color: var(--verde);
+            margin-bottom: 12px;
+        }
+
+        .exito p {
+            color: var(--gris);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        /* ERROR */
+        .error-msg {
+            color: #c53030;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .campo.invalido input,
+        .campo.invalido select,
+        .campo.invalido textarea {
+            border-color: #e53e3e;
+        }
+
+        .campo.invalido .error-msg {
+            display: block;
+        }
+
+        /* LOADING OVERLAY */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.85);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .loading-overlay.visible {
+            display: flex;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--verde-suave);
+            border-top-color: var(--verde);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .seccion {
+                padding: 24px 20px;
+            }
+
+            .header {
+                padding: 36px 20px 28px;
+            }
+
+            .instrucciones {
+                padding: 14px 16px;
+            }
+
+            .steps-nav .step-tab {
+                font-size: 0.7rem;
+                padding: 12px 4px;
+            }
+
+            .steps-nav .step-tab .num {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p style="color: var(--verde); font-weight: 500">Enviando respuesta…</p>
+    </div>
+
+    <div class="container">
+        <div class="form-card">
+            <!-- HEADER -->
+            <div class="header">
+                <div class="badge">Ciudad Bienestar · PIC 2026</div>
+                <div class="logo-area">
+                    <div class="logo-icon">
+                        <img src="https://ciudadbienestar.github.io/usuariosSICB/Logos_Acciones_Colectivas.png"
+                            alt="Logo Ciudad Bienestar" class="logo-img" />
+                    </div>
+                </div>
+                <h1>Encuesta de Satisfacción<br />Cursos Virtuales CB 2026</h1>
+                <p class="subtitulo">
+                    Evaluación de la calidad de los procesos formativos y sesiones
+                    educativas virtuales de la Estrategia Ciudad Bienestar.
+                </p>
+            </div>
+
+            <!-- INSTRUCCIONES -->
+            <div class="instrucciones">
+                📋 <strong>Instrucciones:</strong> Esta encuesta está dirigida a las
+                personas que culminen 100% los procesos formativos o sesiones
+                educativas virtuales desarrolladas por los diferentes equipos de problemáticas del Plan de
+                Intervenciones Colectivas – PIC. Para el
+                diligenciamiento del instrumento, favor escribir o seleccionar alguna
+                de las opciones dispuestas en el cuestionario según corresponda. <br> <br>
+                Agradecemos diligenciar la totalidad de los campos ya que esto nos
+                permitirá aprender y mejorar nuestras acciones.
+            </div>
+
+            <!-- PROGRESS BAR -->
+            <div class="progress-bar-wrap">
+                <div class="progress-bar-fill" id="progressBar" style="width: 33%"></div>
+            </div>
+
+            <!-- STEPS NAV -->
+            <div class="steps-nav">
+                <div class="step-tab active" id="tab1">
+                    <span class="num">1</span>Datos Generales
+                </div>
+                <div class="step-tab" id="tab2">
+                    <span class="num">2</span>Evaluación
+                </div>
+                <div class="step-tab" id="tab3">
+                    <span class="num">3</span>Observaciones
+                </div>
+            </div>
+
+            <form id="encuesta" novalidate>
+                <!-- ===================== SECCIÓN 1 ===================== -->
+                <div class="seccion activa" id="sec1">
+                    <div class="seccion-titulo">
+                        <span class="icono">👤</span> Datos Generales
+                    </div>
+                    <p class="seccion-desc">
+                        Información básica del participante. Todos los campos marcados con
+                        <span style="color: #e53e3e">*</span> son obligatorios.
+                    </p>
+
+                    <div class="campo" id="campo-email">
+                        <label for="email">Correo Electrónico <span class="req">*</span></label>
+                        <input type="email" id="email" name="email" placeholder="" required />
+                        <div class="error-msg">Por favor ingrese un correo válido.</div>
+                    </div>
+
+                    <div class="campo" id="campo-id">
+                        <label for="identificacion">Número de Identificación <span class="req">*</span></label>
+                        <input type="text" id="identificacion" name="identificacion" placeholder="" required />
+                        <div class="error-msg">Este campo es obligatorio.</div>
+                    </div>
+
+                    <div class="campo" id="campo-fecha">
+                        <label for="fecha">1.1 Fecha <span class="req">*</span></label>
+                        <input type="date" id="fecha" name="fecha" required />
+                        <div class="error-msg">Por favor seleccione una fecha.</div>
+                    </div>
+
+                    <div class="campo" id="campo-barrio">
+                        <label for="barrio">1.2 Barrio o vereda donde reside
+                            <span class="req">*</span></label>
+                        <input type="text" id="barrio" name="barrio" placeholder="" required />
+                        <div class="error-msg">Por favor ingrese su barrio o vereda.</div>
+                    </div>
+
+                    <div class="campo" id="campo-proceso">
+                        <label for="proceso">1.3 Proceso formativo a evaluar
+                            <span class="req">*</span></label>
+                        <select id="proceso" name="proceso" required>
+                            <option value="">— Seleccione —</option>
+                            <option>CIUDAD BIENESTAR CONCEPTOS Y PROCEDIMIENTOS</option>
+                            <option>EDUCACIÓN POPULAR</option>
+                            <option>POLÍTICA PÚBLICA SALUD COLECTIVA</option>
+                            <option>
+                                SISTEMA DE INFORMACIÓN GEOGRÁFICO PARTICIPATIVO (SIGP)
+                            </option>
+                            <option>VIAJE HACIA EL SENTIR, ENTIENDO LA SALUD MENTAL</option>
+                            <option>
+                                VACU - APRENDIENDO POR EL DERECHO A LA SALUD (COMUNITARIO)
+                            </option>
+                            <option>
+                                VACU - APRENDIENDO POR EL DERECHO A LA SALUD (INSTITUCIONAL)
+                            </option>
+                        </select>
+                        <div class="error-msg">
+                            Por favor seleccione un proceso formativo.
+                        </div>
+                    </div>
+
+                    <div class="campo" id="campo-genero">
+                        <label>1.4 Me identifico como <span class="req">*</span></label>
+                        <div class="radio-grupo" id="generoGrupo">
+                            <label><input type="radio" name="genero" value="Hombre" />
+                                Hombre</label>
+                            <label><input type="radio" name="genero" value="Mujer" />
+                                Mujer</label>
+                            <label id="labelOtroGenero"><input type="radio" name="genero" value="Otro" /> Otro,
+                                ¿cuál?</label>
+                        </div>
+                        <div class="otro-campo" id="otroGenero">
+                            <input type="text" id="otroGeneroTexto" name="otroGenero" placeholder="Especifique…" />
+                        </div>
+                        <div class="error-msg" id="errorGenero">
+                            Por favor seleccione una opción.
+                        </div>
+                    </div>
+
+                    <div class="campo" id="campo-edad">
+                        <label>1.5 Mi edad / curso de vida <span class="req">*</span></label>
+                        <div class="radio-grupo" style="flex-direction: column; gap: 8px" id="edadGrupo">
+                            <label><input type="radio" name="edad" value="Primera Infancia (0 a 5 años)" />Primera
+                                Infancia (0 a 5 años)</label>
+                            <label><input type="radio" name="edad" value="Infancia (6 a 11 años)" />Infancia (6 a 11
+                                años)</label>
+                            <label><input type="radio" name="edad" value="Adolescencia (12 a 18 años)" />Adolescencia
+                                (12 a 18 años)</label>
+                            <label><input type="radio" name="edad" value="Juventud (19 a 26 años)" />Juventud (19 a 26
+                                años)</label>
+                            <label><input type="radio" name="edad" value="Adultez (27 a 59 años)" />Adultez (27 a 59
+                                años)</label>
+                            <label><input type="radio" name="edad" value="Vejez (60 o más años)" />Vejez (60 o más
+                                años)</label>
+                        </div>
+                        <div class="error-msg" id="errorEdad">
+                            Por favor seleccione su curso de vida.
+                        </div>
+                    </div>
+
+                    <div class="botones">
+                        <div></div>
+                        <button type="button" class="btn btn-primario" onclick="irA(2)">
+                            Continuar →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ===================== SECCIÓN 2 ===================== -->
+                <div class="seccion" id="sec2">
+                    <div class="seccion-titulo">
+                        <span class="icono">📊</span> Evaluación del Proceso
+                    </div>
+                    <p class="seccion-desc">
+                        Seleccione la opción que mejor describe su experiencia para cada
+                        aspecto.
+                    </p>
+
+                    <div class="campo">
+                        <label>2.1 Evaluación por aspectos <span class="req">*</span></label>
+                        <div class="likert-wrap">
+                            <table class="likert-table">
+                                <thead>
+                                    <tr>
+                                        <th style="min-width: 200px">Aspecto</th>
+                                        <th>De acuerdo</th>
+                                        <th>Med. de acuerdo</th>
+                                        <th>En desacuerdo</th>
+                                        <th>Tot. en desacuerdo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            2.1 Estabilidad y funcionalidad de la plataforma digital
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="plataforma"
+                                                value="De acuerdo" required />
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="plataforma"
+                                                value="Medianamente de acuerdo" />
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="plataforma"
+                                                value="En desacuerdo" />
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="plataforma"
+                                                value="Totalmente en desacuerdo" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>2.2 Diseño y planificación del curso</td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="diseno" value="De acuerdo"
+                                                required />
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="diseno"
+                                                value="Medianamente de acuerdo" />
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="diseno"
+                                                value="En desacuerdo" />
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="diseno"
+                                                value="Totalmente en desacuerdo" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            2.3 Importancia y aplicabilidad de los temas trabajados
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="temas" value="De acuerdo"
+                                                required />
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="temas"
+                                                value="Medianamente de acuerdo" />
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="temas"
+                                                value="En desacuerdo" />
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="temas"
+                                                value="Totalmente en desacuerdo" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            2.4 Calidad didáctica (uso de herramientas y recursos
+                                            virtuales)
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="didactica" value="De acuerdo"
+                                                required />
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="didactica"
+                                                value="Medianamente de acuerdo" />
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="didactica"
+                                                value="En desacuerdo" />
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="didactica"
+                                                value="Totalmente en desacuerdo" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            2.5 Material de apoyo para el refuerzo de las temáticas
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="material" value="De acuerdo"
+                                                required />
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="material"
+                                                value="Medianamente de acuerdo" />
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="material"
+                                                value="En desacuerdo" />
+                                        </td>
+                                        <td>
+                                            <input class="likert-radio" type="radio" name="material"
+                                                value="Totalmente en desacuerdo" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="error-msg" id="errorLikert">
+                            Por favor responda todos los aspectos de la tabla.
+                        </div>
+                    </div>
+
+                    <div class="campo">
+                        <label>Percepción general del proceso formativo
+                            <span class="req">*</span></label>
+                        <div class="puntuacion-wrap" id="puntuacionWrap">
+                            <button type="button" class="star-btn" data-val="1" onclick="setPuntuacion(1)">
+                                ⭐ 1
+                            </button>
+                            <button type="button" class="star-btn" data-val="2" onclick="setPercepcion(2)">
+                                ⭐ 2
+                            </button>
+                            <button type="button" class="star-btn" data-val="3" onclick="setPercepcion(3)">
+                                ⭐ 3
+                            </button>
+                            <button type="button" class="star-btn" data-val="4" onclick="setPercepcion(4)">
+                                ⭐ 4
+                            </button>
+                            <button type="button" class="star-btn" data-val="5" onclick="setPercepcion(5)">
+                                ⭐ 5
+                            </button>
+                        </div>
+                        <input type="hidden" id="percepcion" name="percepcion" required />
+                        <div class="error-msg" id="errorPercepcion">
+                            Por favor seleccione una puntuación.
+                        </div>
+                    </div>
+
+                    <div class="botones">
+                        <button type="button" class="btn btn-secundario" onclick="irA(1)">
+                            ← Atrás
+                        </button>
+                        <button type="button" class="btn btn-primario" onclick="irA(3)">
+                            Continuar →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ===================== SECCIÓN 3 ===================== -->
+                <div class="seccion" id="sec3">
+                    <div class="seccion-titulo">
+                        <span class="icono">💬</span> Aspectos Destacados y Observaciones
+                    </div>
+                    <p class="seccion-desc">
+                        Sus comentarios son muy valiosos para seguir mejorando.
+                    </p>
+
+                    <div class="campo">
+                        <label for="gusta">3.1 ¿Qué fue lo que más le gustó del proceso formativo?</label>
+                        <textarea id="gusta" name="gusta" placeholder="Comparta lo que más le gustó…"></textarea>
+                    </div>
+
+                    <div class="campo">
+                        <label for="nogusta">3.2 ¿Qué no le gustó del proceso formativo?</label>
+                        <textarea id="nogusta" name="nogusta" placeholder="Comparta lo que mejoraría…"></textarea>
+                    </div>
+
+                    <div class="campo">
+                        <label for="relevantes">3.3 ¿Qué aspectos más relevantes destacaría?</label>
+                        <textarea id="relevantes" name="relevantes" placeholder="Aspectos destacados…"></textarea>
+                    </div>
+
+                    <div class="campo">
+                        <label for="sugerencias">3.4 Sugerencias para mejorar (especialmente si calificó algo
+                            como "En desacuerdo")</label>
+                        <textarea id="sugerencias" name="sugerencias"
+                            placeholder="Sus sugerencias de mejora…"></textarea>
+                    </div>
+
+                    <div class="botones">
+                        <button type="button" class="btn btn-secundario" onclick="irA(2)">
+                            ← Atrás
+                        </button>
+                        <button type="submit" class="btn btn-primario" id="btnEnviar">
+                            Enviar respuesta ✓
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- ÉXITO -->
+            <div class="exito" id="exitoMsg">
+                <div class="exito-icon">✅</div>
+                <h2>¡Gracias por su respuesta!</h2>
+                <p>
+                    Su encuesta fue enviada exitosamente. Su opinión es fundamental para
+                    mejorar nuestros procesos formativos y continuar fortaleciendo
+                    nuestros procesos.
+                </p>
+                <br />
+                <button class="btn btn-primario" onclick="reiniciar()" style="margin: 0 auto">
+                    Enviar otra respuesta
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========================
+        // CONFIGURACIÓN GOOGLE SHEETS
+        // ========================
+        // 1. Crea tu Google Apps Script Web App y reemplaza esta URL:
+        const GOOGLE_SCRIPT_URL =
+            "https://script.google.com/macros/s/AKfycbycy847Q5xIaKuByJDKugjYl74lIB07QC3CGpZOuT5HGZ08GzL42IpMojQkcJ-GRMK8/exec";
+
+        // ========================
+        // NAVEGACIÓN ENTRE SECCIONES
+        // ========================
+        let seccionActual = 1;
+        const totalSecciones = 3;
+
+        function irA(num) {
+            if (num > seccionActual && !validarSeccion(seccionActual)) return;
+            document
+                .getElementById(`sec${seccionActual}`)
+                .classList.remove("activa");
+            document
+                .getElementById(`tab${seccionActual}`)
+                .classList.remove("active");
+            document.getElementById(`tab${seccionActual}`).classList.add("done");
+            seccionActual = num;
+            document.getElementById(`sec${num}`).classList.add("activa");
+            document.getElementById(`tab${num}`).classList.add("active");
+            document.getElementById(`tab${num}`).classList.remove("done");
+            document.getElementById("progressBar").style.width =
+                (num / totalSecciones) * 100 + "%";
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        // ========================
+        // VALIDACIÓN
+        // ========================
+        function validarSeccion(n) {
+            if (n === 1) return validarSec1();
+            if (n === 2) return validarSec2();
+            return true;
+        }
+
+        function marcarCampo(id, valido, msg) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (valido) {
+                el.classList.remove("invalido");
+            } else {
+                el.classList.add("invalido");
+            }
+            if (msg) {
+                const e = el.querySelector(".error-msg");
+                if (e) e.textContent = msg;
+            }
+        }
+
+        function validarSec1() {
+            let ok = true;
+            const email = document.getElementById("email");
+            const emailOk =
+                email.value && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
+            marcarCampo("campo-email", emailOk);
+            if (!emailOk) ok = false;
+
+            const id_ = document.getElementById("identificacion");
+            marcarCampo("campo-id", !!id_.value.trim());
+            if (!id_.value.trim()) ok = false;
+
+            const fecha = document.getElementById("fecha");
+            marcarCampo("campo-fecha", !!fecha.value);
+            if (!fecha.value) ok = false;
+
+            const barrio = document.getElementById("barrio");
+            marcarCampo("campo-barrio", !!barrio.value.trim());
+            if (!barrio.value.trim()) ok = false;
+
+            const proceso = document.getElementById("proceso");
+            marcarCampo("campo-proceso", !!proceso.value);
+            if (!proceso.value) ok = false;
+
+            const genero = document.querySelector('input[name="genero"]:checked');
+            const errG = document.getElementById("errorGenero");
+            if (!genero) {
+                errG.style.display = "block";
+                ok = false;
+            } else {
+                errG.style.display = "none";
+            }
+
+            const edad = document.querySelector('input[name="edad"]:checked');
+            const errE = document.getElementById("errorEdad");
+            if (!edad) {
+                errE.style.display = "block";
+                ok = false;
+            } else {
+                errE.style.display = "none";
+            }
+
+            return ok;
+        }
+
+        function validarSec2() {
+            let ok = true;
+            const items = [
+                "plataforma",
+                "diseno",
+                "temas",
+                "didactica",
+                "material",
+            ];
+            let likertOk = true;
+            items.forEach((n) => {
+                if (!document.querySelector(`input[name="${n}"]:checked`))
+                    likertOk = false;
+            });
+            const errL = document.getElementById("errorLikert");
+            if (!likertOk) {
+                errL.style.display = "block";
+                ok = false;
+            } else {
+                errL.style.display = "none";
+            }
+
+            const punt = document.getElementById("percepcion").value;
+            const errP = document.getElementById("errorPercepcion");
+            if (!punt) {
+                errP.style.display = "block";
+                ok = false;
+            } else {
+                errP.style.display = "none";
+            }
+
+            return ok;
+        }
+
+        // ========================
+        // OTRO GÉNERO
+        // ========================
+        document.querySelectorAll('input[name="genero"]').forEach((r) => {
+            r.addEventListener("change", function () {
+                const campo = document.getElementById("otroGenero");
+                if (this.value === "Otro") campo.classList.add("visible");
+                else campo.classList.remove("visible");
+            });
+        });
+
+        // ========================
+        // PERCEPCION ESTRELLAS
+        // ========================
+        function setPercepcion(val) {
+            document.getElementById("percepcion").value = val;
+            document.querySelectorAll(".star-btn").forEach((b) => {
+                b.classList.toggle("activa", parseInt(b.dataset.val) <= val);
+            });
+            document.getElementById("errorPercepcion").style.display = "none";
+        }
+
+        // ========================
+        // ENVÍO DEL FORMULARIO
+        // ========================
+        document
+            .getElementById("encuesta")
+            .addEventListener("submit", async function (e) {
+                e.preventDefault();
+                if (!validarSeccion(3)) return;
+
+                const loading = document.getElementById("loadingOverlay");
+                loading.classList.add("visible");
+
+                const getData = (name) => {
+                    const el = document.querySelector(`input[name="${name}"]:checked`);
+                    return el ? el.value : "";
+                };
+
+                const data = {
+                    timestamp: new Date().toLocaleString("es-CO"),
+                    email: document.getElementById("email").value,
+                    identificacion: document.getElementById("identificacion").value,
+                    fecha: document.getElementById("fecha").value,
+                    barrio: document.getElementById("barrio").value,
+                    proceso: document.getElementById("proceso").value,
+                    genero:
+                        getData("genero") === "Otro"
+                            ? "Otro: " + document.getElementById("otroGeneroTexto").value
+                            : getData("genero"),
+                    edad: getData("edad"),
+                    plataforma: getData("plataforma"),
+                    diseno: getData("diseno"),
+                    temas: getData("temas"),
+                    didactica: getData("didactica"),
+                    material: getData("material"),
+                    puntuacion: document.getElementById("percepcion").value,
+                    gusta: document.getElementById("gusta").value,
+                    nogusta: document.getElementById("nogusta").value,
+                    relevantes: document.getElementById("relevantes").value,
+                    sugerencias: document.getElementById("sugerencias").value,
+                };
+
+                try {
+  await fetch(GOOGLE_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  loading.classList.remove('visible');
+
+  document.getElementById('encuesta').style.display = 'none';
+  document.querySelector('.steps-nav').style.display = 'none';
+  document.querySelector('.progress-bar-wrap').style.display = 'none';
+  document.querySelector('.instrucciones').style.display = 'none'; // 👈 AQUÍ
+
+  document.getElementById('exitoMsg').classList.add('visible');
+
+} catch (err) {
+                    loading.classList.remove("visible");
+                    alert("Ocurrió un error al enviar. Por favor intente nuevamente.");
+                    console.error(err);
+                }
+            });
+
+        // ========================
+        // REINICIAR
+        // ========================
+        function reiniciar() {
+            document.getElementById("encuesta").reset();
+            document.getElementById("encuesta").style.display = "block";
+            document.querySelector(".steps-nav").style.display = "flex";
+            document.querySelector(".progress-bar-wrap").style.display = "block";
+            document.getElementById("exitoMsg").classList.remove("visible");
+            document
+                .querySelectorAll(".star-btn")
+                .forEach((b) => b.classList.remove("activa"));
+            document.getElementById("percepcion").value = "";
+            document.getElementById("otroGenero").classList.remove("visible");
+            seccionActual = 1;
+            irA(1);
+            document.getElementById("tab1").classList.remove("done");
+            document.getElementById("tab2").classList.remove("done", "active");
+            document.getElementById("tab3").classList.remove("done", "active");
+        }
+
+        // Setear fecha de hoy por defecto
+        document.getElementById("fecha").valueAsDate = new Date();
+    </script>
+</body>
+
+</html>
