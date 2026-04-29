@@ -2,11 +2,545 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Visor de Documento PDF</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Visor de Documento PDF - Educación Popular</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      background: #eef2f5;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-container {
+      background: #fff;
+      max-width: 600px;
+      width: 90%;
+      max-height: 85vh;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      animation: modalEntrada 0.4s ease;
+    }
+
+    @keyframes modalEntrada {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, #1a472a 0%, #2d6a4f 100%);
+      color: white;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .modal-icon {
+      font-size: 3rem;
+      margin-bottom: 8px;
+    }
+
+    .modal-header h2 {
+      font-family: 'Lora', serif;
+      font-size: 1.5rem;
+    }
+
+    .modal-body {
+      padding: 24px;
+      max-height: 55vh;
+      overflow-y: auto;
+    }
+
+    .modal-section {
+      margin-bottom: 24px;
+    }
+
+    .modal-section h3 {
+      color: #2d6a4f;
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+    }
+
+    .modal-section p, .modal-section li {
+      color: #2d3e2b;
+      line-height: 1.5;
+      font-size: 0.95rem;
+    }
+
+    .modal-section ul {
+      margin-left: 20px;
+      margin-top: 8px;
+    }
+
+    .modal-section li {
+      margin: 8px 0;
+    }
+
+    .modal-footer {
+      padding: 16px 24px 24px;
+      text-align: center;
+    }
+
+    .btn-iniciar {
+      background: linear-gradient(135deg, #1a472a 0%, #2d6a4f 100%);
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 40px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-iniciar:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    /* LOADING */
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      z-index: 1500;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.5s ease;
+    }
+
+    .loading-screen.oculto {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-logo {
+      font-size: 4rem;
+      animation: bounce 1s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .loading-screen h2 {
+      margin-top: 20px;
+      color: #1a472a;
+      font-family: 'Lora', serif;
+    }
+
+    .loading-bar-wrap {
+      width: 300px;
+      height: 6px;
+      background: #e0e0e0;
+      border-radius: 10px;
+      margin-top: 20px;
+      overflow: hidden;
+    }
+
+    .loading-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #1a472a, #40916c);
+      transition: width 0.3s ease;
+    }
+
+    .loading-pct {
+      margin-top: 10px;
+      font-weight: 600;
+      color: #2d6a4f;
+    }
+
+    /* TOPBAR */
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid #d1d9e6;
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: #1a472a;
+    }
+
+    .dot {
+      font-size: 1.4rem;
+    }
+
+    .topbar-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-icon {
+      background: #f0f2f5;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all 0.2s;
+      color: #2d3e2b;
+    }
+
+    .btn-icon:hover:not(:disabled) {
+      background: #e0e7f0;
+      transform: scale(1.05);
+    }
+
+    .btn-icon:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .page-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #f0f2f5;
+      padding: 4px 12px;
+      border-radius: 8px;
+    }
+
+    .page-input-wrap input {
+      width: 60px;
+      border: none;
+      background: transparent;
+      font-size: 1rem;
+      text-align: center;
+      font-weight: 600;
+      outline: none;
+    }
+
+    .zoom-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .zoom-label {
+      min-width: 50px;
+      text-align: center;
+      font-weight: 600;
+      color: #1a472a;
+    }
+
+    /* BANNER DESTACADO */
+    .destacado-banner {
+      background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+      border-bottom: 2px solid #c9903a;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      font-size: 0.9rem;
+    }
+
+    .btn-destacado {
+      background: #c9903a;
+      color: white;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-destacado:hover {
+      background: #a8742a;
+      transform: translateY(-1px);
+    }
+
+    /* MAIN */
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px;
+      background: #fafbfd;
+      border-right: 1px solid #d1d9e6;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease;
+      overflow: hidden;
+    }
+
+    .sidebar.oculto {
+      transform: translateX(-100%);
+      position: absolute;
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid #d1d9e6;
+    }
+
+    .sidebar-header h3 {
+      color: #1a472a;
+      margin-bottom: 12px;
+    }
+
+    .sidebar-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      border: 1px solid #d1d9e6;
+      border-radius: 8px;
+      padding: 6px 12px;
+    }
+
+    .sidebar-search input {
+      border: none;
+      outline: none;
+      width: 100%;
+    }
+
+    .thumbnails {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    .thumb-item {
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-radius: 8px;
+      padding: 4px;
+    }
+
+    .thumb-item:hover {
+      background: #e8f0fe;
+      transform: translateX(4px);
+    }
+
+    .thumb-item.activo {
+      background: #e8f0fe;
+      border-left: 3px solid #1a472a;
+    }
+
+    .thumb-canvas canvas {
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .thumb-num {
+      font-size: 0.75rem;
+      text-align: center;
+      margin-top: 4px;
+      color: #5a6e5a;
+    }
+
+    /* VIEWER */
+    .viewer {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      background: #eef2f5;
+    }
+
+    .page-wrap {
+      position: relative;
+      background: white;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .page-wrap.activo-visible {
+      box-shadow: 0 0 0 3px #c9903a;
+    }
+
+    .page-wrap canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .page-label {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .error-box {
+      display: none;
+      text-align: center;
+      padding: 40px;
+      background: white;
+      border-radius: 16px;
+      margin: 40px;
+    }
+
+    .error-box.visible {
+      display: block;
+    }
+
+    /* NOTIFICACIONES */
+    .notificacion {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1e7a55;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      z-index: 1100;
+      animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .notificacion.error {
+      background: #c53030;
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .topbar {
+        padding: 8px 12px;
+      }
+      
+      .topbar-nav {
+        order: 1;
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100%;
+        z-index: 1000;
+        transform: translateX(-100%);
+      }
+      
+      .sidebar.oculto {
+        transform: translateX(-100%);
+      }
+      
+      .sidebar:not(.oculto) {
+        transform: translateX(0);
+        box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+      }
+      
+      .destacado-banner {
+        font-size: 0.8rem;
+        gap: 8px;
+      }
+      
+      .btn-destacado {
+        padding: 4px 12px;
+        font-size: 0.8rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .viewer {
+        padding: 12px;
+      }
+      
+      .topbar-nav button {
+        padding: 6px 10px;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -49,536 +583,625 @@
   </div>
 </div>
 
-  <!-- LOADING -->
-  <div class="loading-screen" id="loadingScreen">
-    <div class="loading-logo">📄</div>
-    <h2>Cargando documento…</h2>
-    <div class="loading-bar-wrap">
-      <div class="loading-bar" id="loadingBar"></div>
-    </div>
-    <div class="loading-pct" id="loadingPct">0%</div>
+<!-- LOADING -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-logo">📄</div>
+  <h2>Cargando documento…</h2>
+  <div class="loading-bar-wrap">
+    <div class="loading-bar" id="loadingBar"></div>
+  </div>
+  <div class="loading-pct" id="loadingPct">0%</div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="dot">📘</div>
+    <span id="docTitle">Documento</span>
   </div>
 
-  <!-- TOPBAR -->
-  <div class="topbar">
-    <div class="topbar-brand">
-      <div class="dot">📘</div>
-      <span id="docTitle">Documento</span>
+  <div class="topbar-nav">
+    <button class="btn-icon" id="btnFirst" title="Primera página" aria-label="Primera página">⏮</button>
+    <button class="btn-icon" id="btnPrev" title="Página anterior" aria-label="Página anterior">◀</button>
+    <div class="page-input-wrap">
+      <input type="number" id="pageInput" min="1" value="1" aria-label="Número de página" />
+      <span>/ <span id="totalPages">—</span></span>
     </div>
-
-    <div class="topbar-nav">
-      <button class="btn-icon" id="btnFirst" title="Primera página">⏮</button>
-      <button class="btn-icon" id="btnPrev" title="Página anterior">◀</button>
-      <div class="page-input-wrap">
-        <input type="number" id="pageInput" min="1" value="1" />
-        <span>/ <span id="totalPages">—</span></span>
-      </div>
-      <button class="btn-icon" id="btnNext" title="Página siguiente">▶</button>
-      <button class="btn-icon" id="btnLast" title="Última página">⏭</button>
-    </div>
-
-    <div class="zoom-wrap">
-      <button class="btn-icon" id="btnZoomOut" title="Alejar">−</button>
-      <span class="zoom-label" id="zoomLabel">100%</span>
-      <button class="btn-icon" id="btnZoomIn" title="Acercar">+</button>
-      <button class="btn-icon" id="btnFit" title="Ajustar a ancho">↔</button>
-    </div>
-
-    <button class="btn-icon" id="btnDownload" title="Descargar PDF">⬇️</button>
-    <button class="btn-icon btn-sidebar" id="btnSidebar" title="Mostrar/ocultar panel">☰</button>
+    <button class="btn-icon" id="btnNext" title="Página siguiente" aria-label="Página siguiente">▶</button>
+    <button class="btn-icon" id="btnLast" title="Última página" aria-label="Última página">⏭</button>
   </div>
 
-  <!-- BANNER DE PÁGINAS DESTACADAS -->
-  <div class="destacado-banner">
-    <span>📌</span>
-    <span><strong>Páginas destacadas:</strong> 9 a 21</span>
-    <button class="btn-destacado" id="btnIrPagina9">Ir a página 9</button>
-    <button class="btn-destacado" id="btnIrPagina21">Ir a página 21</button>
+  <div class="zoom-wrap">
+    <button class="btn-icon" id="btnZoomOut" title="Alejar" aria-label="Alejar">−</button>
+    <span class="zoom-label" id="zoomLabel">100%</span>
+    <button class="btn-icon" id="btnZoomIn" title="Acercar" aria-label="Acercar">+</button>
+    <button class="btn-icon" id="btnFit" title="Ajustar a ancho" aria-label="Ajustar a ancho">↔</button>
   </div>
 
-  <!-- MAIN -->
-  <div class="main">
+  <button class="btn-icon" id="btnDownload" title="Descargar PDF" aria-label="Descargar PDF">⬇️</button>
+  <button class="btn-icon btn-sidebar" id="btnSidebar" title="Mostrar/ocultar panel" aria-label="Mostrar/ocultar panel">☰</button>
+</div>
 
-    <!-- SIDEBAR -->
-    <div class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <h3>Páginas</h3>
-        <div class="sidebar-search">
-          <span>🔍</span>
-          <input type="number" id="jumpInput" placeholder="Ir a página…" min="1" />
-        </div>
-      </div>
-      <div class="thumbnails" id="thumbnails"></div>
-    </div>
+<!-- BANNER DE PÁGINAS DESTACADAS -->
+<div class="destacado-banner">
+  <span>📌</span>
+  <span><strong>Páginas destacadas:</strong> 9 a 21</span>
+  <button class="btn-destacado" id="btnIrPagina9">Ir a página 9</button>
+  <button class="btn-destacado" id="btnIrPagina21">Ir a página 21</button>
+</div>
 
-    <!-- VISOR -->
-    <div class="viewer" id="viewer">
-      <div class="error-box" id="errorBox">
-        <div style="font-size:3rem">📭</div>
-        <h3>Documento no encontrado</h3>
-        <p>
-          No se pudo cargar el archivo PDF. Verifica que la URL sea correcta y que el archivo exista.
-        </p>
+<!-- MAIN -->
+<div class="main">
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3>Páginas</h3>
+      <div class="sidebar-search">
+        <span>🔍</span>
+        <input type="number" id="jumpInput" placeholder="Ir a página…" min="1" />
       </div>
     </div>
-
+    <div class="thumbnails" id="thumbnails"></div>
   </div>
 
-  <!-- PDF.js desde CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script>
-    // ═══════════════════════════════════════════════
-    // ⚙️  CONFIGURACIÓN
-    // ═══════════════════════════════════════════════
-    const PDF_URL   = "https://ciudadbienestar.github.io/cursoeducacionpopular/Para%20una%20pedagog%C3%ADa%20emancipatoria.pdf";
-    const DOC_TITLE = "Educación Popular: una pedagogía emancipadora latinoamericana";
+  <!-- VISOR -->
+  <div class="viewer" id="viewer">
+    <div class="error-box" id="errorBox">
+      <div style="font-size:3rem">📭</div>
+      <h3>Documento no encontrado</h3>
+      <p>No se pudo cargar el archivo PDF. Verifica que la URL sea correcta y que el archivo exista.</p>
+    </div>
+  </div>
+</div>
 
-    pdfjsLib.GlobalWorkerOptions.workerSrc =
-      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+<!-- PDF.js desde CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  // ═══════════════════════════════════════════════
+  // ⚙️  CONFIGURACIÓN MEJORADA
+  // ═══════════════════════════════════════════════
+  const PDF_URL   = "https://ciudadbienestar.github.io/cursoeducacionpopular/Para%20una%20pedagog%C3%ADa%20emancipatoria.pdf";
+  const DOC_TITLE = "Educación Popular: una pedagogía emancipadora latinoamericana";
 
-    let pdfDoc       = null;
-    let currentPage  = 1;
-    let scale        = 1.4;
-    let sidebarOpen  = true;
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
-    // Elementos DOM
-    const viewer       = document.getElementById("viewer");
-    const thumbnails   = document.getElementById("thumbnails");
-    const totalPagesEl = document.getElementById("totalPages");
-    const pageInput    = document.getElementById("pageInput");
-    const loadingBar   = document.getElementById("loadingBar");
-    const loadingPct   = document.getElementById("loadingPct");
-    const loadingScreen= document.getElementById("loadingScreen");
-    const errorBox     = document.getElementById("errorBox");
-    const zoomLabel    = document.getElementById("zoomLabel");
-    const sidebar      = document.getElementById("sidebar");
-    const jumpInput    = document.getElementById("jumpInput");
-    const modalIndicaciones = document.getElementById("modalIndicaciones");
+  let pdfDoc       = null;
+  let currentPage  = 1;
+  let scale        = 1.4;
+  let sidebarOpen  = true;
+  let pageObserver = null;
+  let notificacionRangoMostrada = false;
+  let pagesRendered = new Set(); // Control de páginas ya renderizadas
 
-    document.getElementById("docTitle").textContent = DOC_TITLE;
+  // Elementos DOM
+  const viewer       = document.getElementById("viewer");
+  const thumbnails   = document.getElementById("thumbnails");
+  const totalPagesEl = document.getElementById("totalPages");
+  const pageInput    = document.getElementById("pageInput");
+  const loadingBar   = document.getElementById("loadingBar");
+  const loadingPct   = document.getElementById("loadingPct");
+  const loadingScreen= document.getElementById("loadingScreen");
+  const errorBox     = document.getElementById("errorBox");
+  const zoomLabel    = document.getElementById("zoomLabel");
+  const sidebar      = document.getElementById("sidebar");
+  const jumpInput    = document.getElementById("jumpInput");
+  const modalIndicaciones = document.getElementById("modalIndicaciones");
 
-    // Variable para controlar si el modal ya se mostró
-    let modalCerrado = false;
+  document.getElementById("docTitle").textContent = DOC_TITLE;
 
-    // ── MANEJO DEL MODAL DE INDICACIONES ────────────────
-    function mostrarModal() {
-      if (!modalCerrado) {
-        modalIndicaciones.classList.add("visible");
-        // Bloquear scroll del body
-        document.body.style.overflow = "hidden";
-      }
+  let modalCerrado = false;
+
+  // ── MANEJO DEL MODAL ────────────────────────────────
+  function mostrarModal() {
+    if (!modalCerrado) {
+      modalIndicaciones.classList.add("visible");
+      document.body.style.overflow = "hidden";
     }
+  }
 
-    function cerrarModal() {
-      modalIndicaciones.classList.remove("visible");
-      document.body.style.overflow = "";
-      modalCerrado = true;
-      // Iniciar carga del PDF después de cerrar el modal
-      cargarPDF();
+  function cerrarModal() {
+    modalIndicaciones.classList.remove("visible");
+    document.body.style.overflow = "";
+    modalCerrado = true;
+    cargarPDF();
+  }
+
+  document.getElementById("btnCerrarModal").addEventListener("click", cerrarModal);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modalIndicaciones.classList.contains("visible")) {
+      cerrarModal();
     }
+  });
 
-    // Evento para cerrar modal
-    document.getElementById("btnCerrarModal").addEventListener("click", cerrarModal);
+  // ── NOTIFICACIONES MEJORADAS ────────────────────────
+  function mostrarNotificacion(mensaje, tipo = "info") {
+    const notificacion = document.createElement("div");
+    notificacion.textContent = mensaje;
+    notificacion.className = `notificacion ${tipo === "error" ? "error" : ""}`;
+    document.body.appendChild(notificacion);
+    setTimeout(() => notificacion.remove(), 3000);
+  }
 
-    // También permitir cerrar con ESC
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && modalIndicaciones.classList.contains("visible")) {
-        cerrarModal();
-      }
-    });
-
-    // ── FUNCIÓN PARA DESCARGAR PDF ─────────────────────
-    async function descargarPDF() {
-      const btnDownload = document.getElementById("btnDownload");
-      const originalText = btnDownload.textContent;
+  // ── DESCARGA MEJORADA ───────────────────────────────
+  async function descargarPDF() {
+    const btnDownload = document.getElementById("btnDownload");
+    const originalText = btnDownload.textContent;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    
+    try {
+      btnDownload.textContent = "⏳";
+      btnDownload.disabled = true;
       
-      try {
-        btnDownload.textContent = "⏳";
-        btnDownload.disabled = true;
-        
-        const response = await fetch(PDF_URL);
-        if (!response.ok) {
-          throw new Error(`Error HTTP: ${response.status}`);
-        }
-        
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        
-        let fileName = PDF_URL.split('/').pop();
-        if (!fileName || !fileName.endsWith('.pdf')) {
-          fileName = `${DOC_TITLE.replace(/[^a-z0-9]/gi, '_')}.pdf`;
-        }
-        
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        
-        btnDownload.textContent = "✓";
-        setTimeout(() => {
-          btnDownload.textContent = originalText;
-          btnDownload.disabled = false;
-        }, 1500);
-        
-      } catch (err) {
-        console.error("Error al descargar:", err);
-        btnDownload.textContent = "❌";
-        setTimeout(() => {
-          btnDownload.textContent = originalText;
-          btnDownload.disabled = false;
-        }, 2000);
-        
-        mostrarNotificacion("Error al descargar el archivo", "error");
+      const response = await fetch(PDF_URL, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/pdf')) {
+        throw new Error('El archivo no es un PDF válido');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      
+      let fileName = PDF_URL.split('/').pop();
+      if (!fileName || !fileName.endsWith('.pdf')) {
+        fileName = `${DOC_TITLE.replace(/[^a-z0-9]/gi, '_')}.pdf`;
+      }
+      
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      btnDownload.textContent = "✓";
+      setTimeout(() => {
+        btnDownload.textContent = originalText;
+        btnDownload.disabled = false;
+      }, 1500);
+      
+    } catch (err) {
+      clearTimeout(timeoutId);
+      console.error("Error al descargar:", err);
+      
+      if (err.name === 'AbortError') {
+        mostrarNotificacion("La descarga tomó demasiado tiempo", "error");
+      } else if (err.message.includes('Failed to fetch')) {
+        mostrarNotificacion("Problema de conexión. Verifica tu internet", "error");
+      } else {
+        mostrarNotificacion(`Error: ${err.message}`, "error");
+      }
+      
+      btnDownload.textContent = "❌";
+      setTimeout(() => {
+        btnDownload.textContent = originalText;
+        btnDownload.disabled = false;
+      }, 2000);
+    }
+  }
+
+  // ── RENDERIZADO BAJO DEMANDA (LAZY LOADING) ──────────
+  async function renderizarPagina(num) {
+    if (pagesRendered.has(`page-${num}`)) return;
+    
+    try {
+      const page     = await pdfDoc.getPage(num);
+      const viewport = page.getViewport({ scale });
+
+      const wrap = document.createElement("div");
+      wrap.className = "page-wrap";
+      wrap.id = `page-${num}`;
+      wrap.style.width  = viewport.width + "px";
+      wrap.style.height = viewport.height + "px";
+
+      const canvas  = document.createElement("canvas");
+      canvas.style.display = "block";
+      const ctx     = canvas.getContext("2d");
+      canvas.width  = viewport.width;
+      canvas.height = viewport.height;
+
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      wrap.appendChild(canvas);
+
+      const label = document.createElement("div");
+      label.className = "page-label";
+      label.textContent = num;
+      
+      if (num >= 9 && num <= 21) {
+        label.style.background = "#c9903a";
+        label.style.fontWeight = "bold";
+      }
+      
+      wrap.appendChild(label);
+      viewer.appendChild(wrap);
+      pagesRendered.add(`page-${num}`);
+    } catch (err) {
+      console.error(`Error renderizando página ${num}:`, err);
+    }
+  }
+
+  async function renderizarThumb(num) {
+    if (pagesRendered.has(`thumb-${num}`)) return;
+    
+    try {
+      const page     = await pdfDoc.getPage(num);
+      const viewport = page.getViewport({ scale: 0.18 });
+
+      const wrap = document.createElement("div");
+      wrap.className = "thumb-item";
+      wrap.id = `thumb-${num}`;
+      wrap.onclick = () => irAPagina(num);
+
+      const canvasWrap = document.createElement("div");
+      canvasWrap.className = "thumb-canvas";
+
+      const canvas  = document.createElement("canvas");
+      const ctx     = canvas.getContext("2d");
+      canvas.width  = viewport.width;
+      canvas.height = viewport.height;
+      await page.render({ canvasContext: ctx, viewport }).promise;
+
+      canvasWrap.appendChild(canvas);
+
+      const numEl = document.createElement("div");
+      numEl.className = "thumb-num";
+      numEl.textContent = `Pág. ${num}`;
+      
+      if (num >= 9 && num <= 21) {
+        numEl.style.color = "#c9903a";
+        numEl.style.fontWeight = "bold";
+      }
+
+      wrap.appendChild(canvasWrap);
+      wrap.appendChild(numEl);
+      thumbnails.appendChild(wrap);
+      pagesRendered.add(`thumb-${num}`);
+    } catch (err) {
+      console.error(`Error renderizando thumbnail ${num}:`, err);
+    }
+  }
+
+  async function renderizarPaginasCercanas(num) {
+    const inicio = Math.max(1, num - 2);
+    const fin = Math.min(pdfDoc.numPages, num + 2);
+    
+    const promises = [];
+    for (let i = inicio; i <= fin; i++) {
+      if (!pagesRendered.has(`page-${i}`)) {
+        promises.push(renderizarPagina(i));
+      }
+      if (!pagesRendered.has(`thumb-${i}`)) {
+        promises.push(renderizarThumb(i));
       }
     }
+    await Promise.all(promises);
+  }
 
-    function mostrarNotificacion(mensaje, tipo = "error") {
-      const notificacion = document.createElement("div");
-      notificacion.textContent = mensaje;
-      notificacion.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: ${tipo === "error" ? "#c53030" : "#1e7a55"};
-        color: #fff;
-        padding: 10px 16px;
-        border-radius: 8px;
-        font-size: 0.875rem;
-        z-index: 1000;
-        animation: fadeInOut 3s ease;
-      `;
-      document.body.appendChild(notificacion);
-      setTimeout(() => notificacion.remove(), 3000);
+  // ── IR A PÁGINA (MEJORADO) ──────────────────────────
+  async function irAPagina(num) {
+    if (!pdfDoc) return;
+    num = Math.max(1, Math.min(num, pdfDoc.numPages));
+    
+    currentPage = num;
+    pageInput.value = num;
+    if (jumpInput) jumpInput.value = num;
+
+    // Renderizar páginas cercanas
+    await renderizarPaginasCercanas(num);
+
+    const wrap = document.getElementById(`page-${num}`);
+    if (wrap) {
+      wrap.scrollIntoView({ behavior: "smooth", block: "start" });
+      document.querySelectorAll(".page-wrap").forEach(w => w.classList.remove("activo-visible"));
+      wrap.classList.add("activo-visible");
     }
 
-    // ── Cargar PDF ──────────────────────────────
-    async function cargarPDF() {
-      try {
-        errorBox.classList.remove("visible");
-        loadingScreen.style.display = "flex";
-        
-        const loadingTask = pdfjsLib.getDocument({
-          url: PDF_URL,
-          cMapUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/",
-          cMapPacked: true,
-          withCredentials: false
-        });
+    document.querySelectorAll(".thumb-item").forEach(t => t.classList.remove("activo"));
+    const thumb = document.getElementById(`thumb-${num}`);
+    if (thumb) {
+      thumb.classList.add("activo");
+      thumb.scrollIntoView({ block: "nearest" });
+    }
 
-        loadingTask.onProgress = ({ loaded, total }) => {
-          if (total) {
-            const pct = Math.min(Math.round((loaded / total) * 100), 99);
-            loadingBar.style.width = pct + "%";
-            loadingPct.textContent = pct + "%";
+    actualizarBotones();
+    guardarProgreso();
+    
+    // Notificación única para páginas fuera del rango
+    if (num > 21 && !notificacionRangoMostrada) {
+      notificacionRangoMostrada = true;
+      setTimeout(() => {
+        mostrarNotificacion("💡 Recuerda que el foco principal está en páginas 9 a 21", "info");
+      }, 500);
+    }
+  }
+
+  function actualizarBotones() {
+    const firstBtn = document.getElementById("btnFirst");
+    const prevBtn = document.getElementById("btnPrev");
+    const nextBtn = document.getElementById("btnNext");
+    const lastBtn = document.getElementById("btnLast");
+    
+    if (firstBtn) firstBtn.disabled = currentPage <= 1;
+    if (prevBtn) prevBtn.disabled = currentPage <= 1;
+    if (nextBtn) nextBtn.disabled = currentPage >= (pdfDoc?.numPages || 1);
+    if (lastBtn) lastBtn.disabled = currentPage >= (pdfDoc?.numPages || 1);
+  }
+
+  // ── PROGRESO CON localStorage ────────────────────────
+  function guardarProgreso() {
+    try {
+      localStorage.setItem('ultimaPagina', currentPage);
+      localStorage.setItem('ultimaEscala', scale);
+    } catch (e) {
+      console.warn('No se pudo guardar el progreso');
+    }
+  }
+
+  function cargarProgreso() {
+    try {
+      const lastPage = localStorage.getItem('ultimaPagina');
+      const lastScale = localStorage.getItem('ultimaEscala');
+      if (lastScale && !isNaN(parseFloat(lastScale))) {
+        scale = Math.min(3.0, Math.max(0.5, parseFloat(lastScale)));
+        zoomLabel.textContent = Math.round(scale * 100) + "%";
+      }
+      if (lastPage && pdfDoc) {
+        return parseInt(lastPage);
+      }
+    } catch (e) {
+      console.warn('No se pudo cargar el progreso');
+    }
+    return 1;
+  }
+
+  // ── CONFIGURAR OBSERVER (CON LIMPIEZA) ──────────────
+  function configurarObserver() {
+    if (pageObserver) {
+      pageObserver.disconnect();
+    }
+    
+    pageObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+          const match = entry.target.id.match(/page-(\d+)/);
+          if (match) {
+            const num = parseInt(match[1]);
+            if (num !== currentPage) {
+              currentPage = num;
+              pageInput.value = num;
+              if (jumpInput) jumpInput.value = num;
+              document.querySelectorAll(".thumb-item").forEach(t => t.classList.remove("activo"));
+              const thumb = document.getElementById(`thumb-${num}`);
+              if (thumb) { 
+                thumb.classList.add("activo"); 
+                thumb.scrollIntoView({ block: "nearest" });
+              }
+              actualizarBotones();
+              guardarProgreso();
+            }
           }
-        };
-
-        pdfDoc = await loadingTask.promise;
-        
-        if (!pdfDoc || !pdfDoc.numPages) {
-          throw new Error("El documento no tiene páginas");
         }
-        
-        totalPagesEl.textContent = pdfDoc.numPages;
-        pageInput.max = pdfDoc.numPages;
-        if (jumpInput) jumpInput.max = pdfDoc.numPages;
-        pageInput.value = 1;
+      });
+    }, { root: viewer, threshold: 0.5 });
+    
+    document.querySelectorAll(".page-wrap").forEach(wrap => pageObserver.observe(wrap));
+  }
 
-        loadingBar.style.width = "100%";
-        loadingPct.textContent = "100%";
-        
-        setTimeout(() => {
-          loadingScreen.classList.add("oculto");
-          setTimeout(() => {
-            loadingScreen.style.display = "none";
-            loadingScreen.classList.remove("oculto");
-          }, 500);
-        }, 300);
+  // ── ZOOM MEJORADO (CON PRESERVACIÓN DE POSICIÓN) ────
+  let scrollPositionBeforeZoom = 0;
 
-        await renderizarTodas();
-        irAPagina(1);
-        configurarObserver();
+  async function ajustarZoom(nuevoScale) {
+    nuevoScale = Math.max(0.5, Math.min(3.0, nuevoScale));
+    if (Math.abs(scale - nuevoScale) < 0.01) return;
+    
+    // Guardar posición actual
+    const paginaActual = currentPage;
+    const viewerContainer = viewer;
+    const currentPageElement = document.getElementById(`page-${paginaActual}`);
+    let scrollOffset = 0;
+    
+    if (currentPageElement) {
+      const viewerRect = viewerContainer.getBoundingClientRect();
+      const pageRect = currentPageElement.getBoundingClientRect();
+      scrollOffset = pageRect.top - viewerRect.top;
+    }
+    
+    // Cambiar escala
+    scale = nuevoScale;
+    zoomLabel.textContent = Math.round(scale * 100) + "%";
+    
+    // Limpiar caché de renderizado
+    pagesRendered.clear();
+    viewer.innerHTML = '';
+    thumbnails.innerHTML = '';
+    
+    // Re-renderizar páginas cercanas
+    await renderizarPaginasCercanas(paginaActual);
+    
+    // Restaurar posición
+    setTimeout(() => {
+      const newPageElement = document.getElementById(`page-${paginaActual}`);
+      if (newPageElement && scrollOffset !== 0) {
+        const viewerRect = viewerContainer.getBoundingClientRect();
+        const newPageRect = newPageElement.getBoundingClientRect();
+        const desiredScroll = viewerContainer.scrollTop + (newPageRect.top - viewerRect.top - scrollOffset);
+        viewerContainer.scrollTo({
+          top: desiredScroll,
+          behavior: 'auto'
+        });
+      }
+      configurarObserver();
+      guardarProgreso();
+    }, 100);
+  }
 
-        // Mostrar notificación de bienvenida
-        setTimeout(() => {
-          mostrarNotificacion("📖 Recuerda enfocarte en las páginas 9 a 21", "info");
-        }, 1000);
+  // ── CARGAR PDF MEJORADO ────────────────────────────
+  async function cargarPDF() {
+    try {
+      errorBox.classList.remove("visible");
+      loadingScreen.style.display = "flex";
+      loadingScreen.classList.remove("oculto");
+      
+      const loadingTask = pdfjsLib.getDocument({
+        url: PDF_URL,
+        cMapUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/",
+        cMapPacked: true,
+        withCredentials: false
+      });
 
-      } catch (err) {
-        console.error("Error cargando PDF:", err);
+      loadingTask.onProgress = ({ loaded, total }) => {
+        if (total) {
+          const pct = Math.min(Math.round((loaded / total) * 100), 99);
+          loadingBar.style.width = pct + "%";
+          loadingPct.textContent = pct + "%";
+        }
+      };
+
+      pdfDoc = await loadingTask.promise;
+      
+      if (!pdfDoc || !pdfDoc.numPages) {
+        throw new Error("El documento no tiene páginas");
+      }
+      
+      totalPagesEl.textContent = pdfDoc.numPages;
+      pageInput.max = pdfDoc.numPages;
+      if (jumpInput) jumpInput.max = pdfDoc.numPages;
+      
+      loadingBar.style.width = "100%";
+      loadingPct.textContent = "100%";
+      
+      // Renderizar primeras páginas
+      await renderizarPaginasCercanas(1);
+      
+      setTimeout(() => {
         loadingScreen.classList.add("oculto");
         setTimeout(() => {
           loadingScreen.style.display = "none";
         }, 500);
-        errorBox.classList.add("visible");
-        
-        let errorMsg = errorBox.querySelector("p");
-        if (errorMsg) {
-          errorMsg.innerHTML = `Error: ${err.message || "No se pudo cargar el PDF. Verifica la conexión o que el archivo exista."}`;
-        }
+      }, 300);
+      
+      const paginaInicial = cargarProgreso();
+      await irAPagina(paginaInicial);
+      configurarObserver();
+      
+      setTimeout(() => {
+        mostrarNotificacion("📖 Recuerda enfocarte en las páginas 9 a 21", "info");
+      }, 1000);
+      
+      // Renderizar resto en segundo plano
+      renderizarPaginasRestantes();
+      
+    } catch (err) {
+      console.error("Error cargando PDF:", err);
+      loadingScreen.classList.add("oculto");
+      setTimeout(() => {
+        loadingScreen.style.display = "none";
+      }, 500);
+      errorBox.classList.add("visible");
+      
+      let errorMsg = errorBox.querySelector("p");
+      if (errorMsg) {
+        errorMsg.innerHTML = `Error: ${err.message || "No se pudo cargar el PDF. Verifica la conexión o que el archivo exista."}`;
       }
     }
-
-    // ── Renderizar todas las páginas ────────────
-    async function renderizarTodas() {
-      viewer.innerHTML = '';
-      thumbnails.innerHTML = '';
-      
-      for (let i = 1; i <= pdfDoc.numPages; i++) {
+  }
+  
+  async function renderizarPaginasRestantes() {
+    for (let i = 1; i <= pdfDoc.numPages; i++) {
+      if (!pagesRendered.has(`page-${i}`)) {
         await renderizarPagina(i);
+      }
+      if (!pagesRendered.has(`thumb-${i}`)) {
         await renderizarThumb(i);
       }
-      
-      // Destacar páginas 9 a 21 en el sidebar
-      for (let i = 9; i <= 21 && i <= pdfDoc.numPages; i++) {
-        const thumb = document.getElementById(`thumb-${i}`);
-        if (thumb) {
-          thumb.style.borderLeft = "3px solid #c9903a";
-          thumb.style.borderRadius = "4px 8px 8px 4px";
-        }
+      // Pequeña pausa para no bloquear la UI
+      if (i % 10 === 0) {
+        await new Promise(resolve => setTimeout(resolve, 10));
       }
     }
+  }
 
-    async function renderizarPagina(num) {
-      try {
-        const page     = await pdfDoc.getPage(num);
-        const viewport = page.getViewport({ scale });
-
-        const wrap = document.createElement("div");
-        wrap.className = "page-wrap";
-        wrap.id = `page-${num}`;
-        wrap.style.width  = viewport.width + "px";
-        wrap.style.height = viewport.height + "px";
-
-        const canvas  = document.createElement("canvas");
-        canvas.style.display = "block";
-        const ctx     = canvas.getContext("2d");
-        canvas.width  = viewport.width;
-        canvas.height = viewport.height;
-
-        await page.render({ canvasContext: ctx, viewport }).promise;
-        wrap.appendChild(canvas);
-
-        const label = document.createElement("div");
-        label.className = "page-label";
-        label.textContent = num;
-        
-        // Destacar páginas 9-21
-        if (num >= 9 && num <= 21) {
-          label.style.background = "#c9903a";
-          label.style.fontWeight = "bold";
-        }
-        
-        wrap.appendChild(label);
-        viewer.appendChild(wrap);
-      } catch (err) {
-        console.error(`Error renderizando página ${num}:`, err);
-      }
+  // ── EVENT LISTENERS ─────────────────────────────────
+  document.getElementById("btnFirst").onclick  = () => irAPagina(1);
+  document.getElementById("btnPrev").onclick   = () => irAPagina(currentPage - 1);
+  document.getElementById("btnNext").onclick   = () => irAPagina(currentPage + 1);
+  document.getElementById("btnLast").onclick   = () => pdfDoc && irAPagina(pdfDoc.numPages);
+  document.getElementById("btnDownload").onclick = descargarPDF;
+  document.getElementById("btnIrPagina9").onclick = () => irAPagina(9);
+  document.getElementById("btnIrPagina21").onclick = () => irAPagina(21);
+  document.getElementById("btnZoomIn").onclick  = () => ajustarZoom(scale + 0.2);
+  document.getElementById("btnZoomOut").onclick = () => ajustarZoom(scale - 0.2);
+  document.getElementById("btnFit").onclick     = async () => {
+    if (pdfDoc && viewer.clientWidth > 0) {
+      const page = await pdfDoc.getPage(1);
+      const vp = page.getViewport({ scale: 1 });
+      const vw = viewer.clientWidth - 48;
+      ajustarZoom(vw / vp.width);
     }
+  };
 
-    async function renderizarThumb(num) {
-      try {
-        const page     = await pdfDoc.getPage(num);
-        const viewport = page.getViewport({ scale: 0.18 });
+  pageInput.addEventListener("change", () => {
+    let val = parseInt(pageInput.value);
+    if (!isNaN(val)) irAPagina(val);
+  });
 
-        const wrap = document.createElement("div");
-        wrap.className = "thumb-item";
-        wrap.id = `thumb-${num}`;
-        wrap.onclick = () => irAPagina(num);
-
-        const canvasWrap = document.createElement("div");
-        canvasWrap.className = "thumb-canvas";
-
-        const canvas  = document.createElement("canvas");
-        const ctx     = canvas.getContext("2d");
-        canvas.width  = viewport.width;
-        canvas.height = viewport.height;
-        await page.render({ canvasContext: ctx, viewport }).promise;
-
-        canvasWrap.appendChild(canvas);
-
-        const numEl = document.createElement("div");
-        numEl.className = "thumb-num";
-        numEl.textContent = `Pág. ${num}`;
-        
-        // Destacar páginas 9-21
-        if (num >= 9 && num <= 21) {
-          numEl.style.color = "#c9903a";
-          numEl.style.fontWeight = "bold";
-        }
-
-        wrap.appendChild(canvasWrap);
-        wrap.appendChild(numEl);
-        thumbnails.appendChild(wrap);
-      } catch (err) {
-        console.error(`Error renderizando thumbnail ${num}:`, err);
-      }
-    }
-
-    // ── Ir a página ─────────────────────────────
-    function irAPagina(num) {
-      if (!pdfDoc) return;
-      num = Math.max(1, Math.min(num, pdfDoc.numPages));
-      
-      currentPage = num;
-      pageInput.value = num;
-      if (jumpInput) jumpInput.value = num;
-
-      const wrap = document.getElementById(`page-${num}`);
-      if (wrap) {
-        wrap.scrollIntoView({ behavior: "smooth", block: "start" });
-        document.querySelectorAll(".page-wrap").forEach(w => w.classList.remove("activo-visible"));
-        wrap.classList.add("activo-visible");
-      }
-
-      document.querySelectorAll(".thumb-item").forEach(t => t.classList.remove("activo"));
-      const thumb = document.getElementById(`thumb-${num}`);
-      if (thumb) {
-        thumb.classList.add("activo");
-        thumb.scrollIntoView({ block: "nearest" });
-      }
-
-      actualizarBotones();
-      
-      // Notificar si está dentro del rango destacado
-      if (num >= 9 && num <= 21) {
-        // Silencioso, solo resaltar
-      } else if (pdfDoc && num > 21) {
-        setTimeout(() => {
-          mostrarNotificacion("💡 Recuerda que el foco principal está en páginas 9 a 21", "info");
-        }, 500);
-      }
-    }
-
-    function actualizarBotones() {
-      const firstBtn = document.getElementById("btnFirst");
-      const prevBtn = document.getElementById("btnPrev");
-      const nextBtn = document.getElementById("btnNext");
-      const lastBtn = document.getElementById("btnLast");
-      
-      if (firstBtn) firstBtn.disabled = currentPage <= 1;
-      if (prevBtn) prevBtn.disabled = currentPage <= 1;
-      if (nextBtn) nextBtn.disabled = currentPage >= (pdfDoc?.numPages || 1);
-      if (lastBtn) lastBtn.disabled = currentPage >= (pdfDoc?.numPages || 1);
-    }
-
-    // ── Configurar Intersection Observer ──
-    function configurarObserver() {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
-            const match = entry.target.id.match(/page-(\d+)/);
-            if (match) {
-              const num = parseInt(match[1]);
-              if (num !== currentPage) {
-                currentPage = num;
-                pageInput.value = num;
-                if (jumpInput) jumpInput.value = num;
-                document.querySelectorAll(".thumb-item").forEach(t => t.classList.remove("activo"));
-                const thumb = document.getElementById(`thumb-${num}`);
-                if (thumb) { 
-                  thumb.classList.add("activo"); 
-                  thumb.scrollIntoView({ block: "nearest" });
-                }
-                actualizarBotones();
-              }
-            }
-          }
-        });
-      }, { root: viewer, threshold: 0.5 });
-      
-      document.querySelectorAll(".page-wrap").forEach(wrap => observer.observe(wrap));
-    }
-
-    // ── Zoom ────────────────────────────────────
-    document.getElementById("btnZoomIn").onclick  = () => ajustarZoom(scale + 0.2);
-    document.getElementById("btnZoomOut").onclick = () => ajustarZoom(scale - 0.2);
-    document.getElementById("btnFit").onclick     = async () => {
-      if (pdfDoc) {
-        const page = await pdfDoc.getPage(1);
-        const vp = page.getViewport({ scale: 1 });
-        const vw = viewer.clientWidth - 48;
-        ajustarZoom(vw / vp.width);
-      }
-    };
-
-    async function ajustarZoom(nuevoScale) {
-      nuevoScale = Math.max(0.5, Math.min(3.0, nuevoScale));
-      if (Math.abs(scale - nuevoScale) < 0.01) return;
-      
-      scale = nuevoScale;
-      zoomLabel.textContent = Math.round(scale * 100) + "%";
-      
-      const paginaActual = currentPage;
-      await renderizarTodas();
-      irAPagina(paginaActual);
-    }
-
-    // ── Event Listeners ─────────────────────────
-    document.getElementById("btnFirst").onclick  = () => irAPagina(1);
-    document.getElementById("btnPrev").onclick   = () => irAPagina(currentPage - 1);
-    document.getElementById("btnNext").onclick   = () => irAPagina(currentPage + 1);
-    document.getElementById("btnLast").onclick   = () => pdfDoc && irAPagina(pdfDoc.numPages);
-    document.getElementById("btnDownload").onclick = descargarPDF;
-    document.getElementById("btnIrPagina9").onclick = () => irAPagina(9);
-    document.getElementById("btnIrPagina21").onclick = () => irAPagina(21);
-
-    pageInput.addEventListener("change", () => {
+  pageInput.addEventListener("keydown", e => { 
+    if (e.key === "Enter") {
       let val = parseInt(pageInput.value);
       if (!isNaN(val)) irAPagina(val);
-    });
+    }
+  });
 
-    pageInput.addEventListener("keydown", e => { 
+  if (jumpInput) {
+    jumpInput.addEventListener("keydown", e => {
       if (e.key === "Enter") {
-        let val = parseInt(pageInput.value);
+        let val = parseInt(jumpInput.value);
         if (!isNaN(val)) irAPagina(val);
       }
     });
+  }
 
-    if (jumpInput) {
-      jumpInput.addEventListener("keydown", e => {
-        if (e.key === "Enter") {
-          let val = parseInt(jumpInput.value);
-          if (!isNaN(val)) irAPagina(val);
-        }
-      });
+  document.getElementById("btnSidebar").onclick = () => {
+    sidebarOpen = !sidebarOpen;
+    sidebar.classList.toggle("oculto", !sidebarOpen);
+  };
+
+  document.addEventListener("keydown", e => {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+    if (modalIndicaciones.classList.contains("visible")) return;
+    
+    switch(e.key) {
+      case "ArrowRight":
+      case "ArrowDown":
+        e.preventDefault();
+        irAPagina(currentPage + 1);
+        break;
+      case "ArrowLeft":
+      case "ArrowUp":
+        e.preventDefault();
+        irAPagina(currentPage - 1);
+        break;
+      case "Home":
+        e.preventDefault();
+        irAPagina(1);
+        break;
+      case "End":
+        e.preventDefault();
+        if (pdfDoc) irAPagina(pdfDoc.numPages);
+        break;
     }
+  });
 
-    document.getElementById("btnSidebar").onclick = () => {
-      sidebarOpen = !sidebarOpen;
-      sidebar.classList.toggle("oculto", !sidebarOpen);
-    };
-
-    document.addEventListener("keydown", e => {
-      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
-      if (modalIndicaciones.classList.contains("visible")) return;
-      
-      switch(e.key) {
-        case "ArrowRight":
-        case "ArrowDown":
-          e.preventDefault();
-          irAPagina(currentPage + 1);
-          break;
-        case "ArrowLeft":
-        case "ArrowUp":
-          e.preventDefault();
-          irAPagina(currentPage - 1);
-          break;
-        case "Home":
-          e.preventDefault();
-          irAPagina(1);
-          break;
-        case "End":
-          e.preventDefault();
-          if (pdfDoc) irAPagina(pdfDoc.numPages);
-          break;
-      }
-    });
-
-    // Mostrar modal al cargar la página
-    mostrarModal();
-  </script>
+  // Iniciar
+  mostrarModal();
+</script>
 </body>
 </html>
