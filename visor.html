@@ -133,6 +133,15 @@
     const PDF_URL   = "https://ciudadbienestar.github.io/cursoeducacionpopular/Para%20una%20pedagog%C3%ADa%20emancipatoria.pdf";
     const DOC_TITLE = "Educación Popular: una pedagogía emancipadora latinoamericana";
 
+    // Offset: diferencia entre número de página visual y página física del PDF
+    // Si la página "9" del contenido está en la posición 13 física, offset = 4
+    const PAGE_OFFSET = 4;
+    const PAGINA_INICIO  = 9;   // página visual de inicio del rango destacado
+    const PAGINA_FIN     = 21;  // página visual de fin del rango destacado
+    // Páginas físicas reales en el PDF:
+    const FISICA_INICIO  = PAGINA_INICIO  + PAGE_OFFSET; // 13
+    const FISICA_FIN     = PAGINA_FIN     + PAGE_OFFSET; // 25
+
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
@@ -157,15 +166,15 @@
 
     document.getElementById("docTitle").textContent = DOC_TITLE;
 
-    // Variable para controlar si el modal ya se mostró
     let modalCerrado = false;
 
     // ── MANEJO DEL MODAL DE INDICACIONES ────────────────
     function mostrarModal() {
       if (!modalCerrado) {
         modalIndicaciones.classList.add("visible");
-        // Bloquear scroll del body
         document.body.style.overflow = "hidden";
+        // FIX: iniciar la carga del PDF en segundo plano mientras el usuario lee el modal
+        cargarPDF();
       }
     }
 
@@ -173,14 +182,10 @@
       modalIndicaciones.classList.remove("visible");
       document.body.style.overflow = "";
       modalCerrado = true;
-      // Iniciar carga del PDF después de cerrar el modal
-      cargarPDF();
     }
 
-    // Evento para cerrar modal
     document.getElementById("btnCerrarModal").addEventListener("click", cerrarModal);
 
-    // También permitir cerrar con ESC
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && modalIndicaciones.classList.contains("visible")) {
         cerrarModal();
@@ -197,9 +202,7 @@
         btnDownload.disabled = true;
         
         const response = await fetch(PDF_URL);
-        if (!response.ok) {
-          throw new Error(`Error HTTP: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
         
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -225,17 +228,23 @@
         
       } catch (err) {
         console.error("Error al descargar:", err);
-        btnDownload.textContent = "❌";
-        setTimeout(() => {
-          btnDownload.textContent = originalText;
-          btnDownload.disabled = false;
-        }, 2000);
-        
-        mostrarNotificacion("Error al descargar el archivo", "error");
+        // Fallback: abrir en nueva pestaña si fetch falla por CORS
+        window.open(PDF_URL, '_blank');
+        btnDownload.textContent = originalText;
+        btnDownload.disabled = false;
       }
     }
 
+    // Variable para controlar notificaciones activas
+    let notificacionActiva = null;
+
     function mostrarNotificacion(mensaje, tipo = "error") {
+      // Eliminar notificación previa si existe
+      if (notificacionActiva) {
+        notificacionActiva.remove();
+        notificacionActiva = null;
+      }
+
       const notificacion = document.createElement("div");
       notificacion.textContent = mensaje;
       notificacion.style.cssText = `
@@ -251,7 +260,11 @@
         animation: fadeInOut 3s ease;
       `;
       document.body.appendChild(notificacion);
-      setTimeout(() => notificacion.remove(), 3000);
+      notificacionActiva = notificacion;
+      setTimeout(() => {
+        notificacion.remove();
+        if (notificacionActiva === notificacion) notificacionActiva = null;
+      }, 3000);
     }
 
     // ── Cargar PDF ──────────────────────────────
@@ -277,9 +290,7 @@
 
         pdfDoc = await loadingTask.promise;
         
-        if (!pdfDoc || !pdfDoc.numPages) {
-          throw new Error("El documento no tiene páginas");
-        }
+        if (!pdfDoc || !pdfDoc.numPages) throw new Error("El documento no tiene páginas");
         
         totalPagesEl.textContent = pdfDoc.numPages;
         pageInput.max = pdfDoc.numPages;
@@ -298,20 +309,19 @@
         }, 300);
 
         await renderizarTodas();
-        irAPagina(1);
         configurarObserver();
 
-        // Mostrar notificación de bienvenida
+        // FIX: esperar a que el DOM estabilice antes de hacer scroll a página 1
+        setTimeout(() => irAPagina(1), 400);
+
         setTimeout(() => {
           mostrarNotificacion("📖 Recuerda enfocarte en las páginas 9 a 21", "info");
-        }, 1000);
+        }, 1200);
 
       } catch (err) {
         console.error("Error cargando PDF:", err);
         loadingScreen.classList.add("oculto");
-        setTimeout(() => {
-          loadingScreen.style.display = "none";
-        }, 500);
+        setTimeout(() => { loadingScreen.style.display = "none"; }, 500);
         errorBox.classList.add("visible");
         
         let errorMsg = errorBox.querySelector("p");
@@ -331,8 +341,8 @@
         await renderizarThumb(i);
       }
       
-      // Destacar páginas 9 a 21 en el sidebar
-      for (let i = 9; i <= 21 && i <= pdfDoc.numPages; i++) {
+      // Destacar páginas físicas correspondientes al rango 9-21
+      for (let i = FISICA_INICIO; i <= FISICA_FIN && i <= pdfDoc.numPages; i++) {
         const thumb = document.getElementById(`thumb-${i}`);
         if (thumb) {
           thumb.style.borderLeft = "3px solid #c9903a";
@@ -365,8 +375,8 @@
         label.className = "page-label";
         label.textContent = num;
         
-        // Destacar páginas 9-21
-        if (num >= 9 && num <= 21) {
+        // Destacar páginas físicas del rango
+        if (num >= FISICA_INICIO && num <= FISICA_FIN) {
           label.style.background = "#c9903a";
           label.style.fontWeight = "bold";
         }
@@ -403,8 +413,8 @@
         numEl.className = "thumb-num";
         numEl.textContent = `Pág. ${num}`;
         
-        // Destacar páginas 9-21
-        if (num >= 9 && num <= 21) {
+        // Destacar páginas físicas del rango
+        if (num >= FISICA_INICIO && num <= FISICA_FIN) {
           numEl.style.color = "#c9903a";
           numEl.style.fontWeight = "bold";
         }
@@ -418,6 +428,7 @@
     }
 
     // ── Ir a página ─────────────────────────────
+    // FIX: usa scrollTop directo en lugar de scrollIntoView para mayor precisión
     function irAPagina(num) {
       if (!pdfDoc) return;
       num = Math.max(1, Math.min(num, pdfDoc.numPages));
@@ -428,7 +439,9 @@
 
       const wrap = document.getElementById(`page-${num}`);
       if (wrap) {
-        wrap.scrollIntoView({ behavior: "smooth", block: "start" });
+        // Scroll directo y exacto al offsetTop del elemento
+        viewer.scrollTop = wrap.offsetTop - 16;
+
         document.querySelectorAll(".page-wrap").forEach(w => w.classList.remove("activo-visible"));
         wrap.classList.add("activo-visible");
       }
@@ -441,34 +454,26 @@
       }
 
       actualizarBotones();
-      
-      // Notificar si está dentro del rango destacado
-      if (num >= 9 && num <= 21) {
-        // Silencioso, solo resaltar
-      } else if (pdfDoc && num > 21) {
-        setTimeout(() => {
-          mostrarNotificacion("💡 Recuerda que el foco principal está en páginas 9 a 21", "info");
-        }, 500);
-      }
     }
 
     function actualizarBotones() {
       const firstBtn = document.getElementById("btnFirst");
-      const prevBtn = document.getElementById("btnPrev");
-      const nextBtn = document.getElementById("btnNext");
-      const lastBtn = document.getElementById("btnLast");
+      const prevBtn  = document.getElementById("btnPrev");
+      const nextBtn  = document.getElementById("btnNext");
+      const lastBtn  = document.getElementById("btnLast");
       
       if (firstBtn) firstBtn.disabled = currentPage <= 1;
-      if (prevBtn) prevBtn.disabled = currentPage <= 1;
-      if (nextBtn) nextBtn.disabled = currentPage >= (pdfDoc?.numPages || 1);
-      if (lastBtn) lastBtn.disabled = currentPage >= (pdfDoc?.numPages || 1);
+      if (prevBtn)  prevBtn.disabled  = currentPage <= 1;
+      if (nextBtn)  nextBtn.disabled  = currentPage >= (pdfDoc?.numPages || 1);
+      if (lastBtn)  lastBtn.disabled  = currentPage >= (pdfDoc?.numPages || 1);
     }
 
     // ── Configurar Intersection Observer ──
     function configurarObserver() {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+          // FIX: usar threshold múltiple para que funcione bien con zoom alto
+          if (entry.isIntersecting && entry.intersectionRatio > 0.1) {
             const match = entry.target.id.match(/page-(\d+)/);
             if (match) {
               const num = parseInt(match[1]);
@@ -487,7 +492,7 @@
             }
           }
         });
-      }, { root: viewer, threshold: 0.5 });
+      }, { root: viewer, threshold: [0, 0.1, 0.5] });
       
       document.querySelectorAll(".page-wrap").forEach(wrap => observer.observe(wrap));
     }
@@ -513,7 +518,8 @@
       
       const paginaActual = currentPage;
       await renderizarTodas();
-      irAPagina(paginaActual);
+      // FIX: también usar setTimeout tras re-render por zoom
+      setTimeout(() => irAPagina(paginaActual), 300);
     }
 
     // ── Event Listeners ─────────────────────────
@@ -522,8 +528,10 @@
     document.getElementById("btnNext").onclick   = () => irAPagina(currentPage + 1);
     document.getElementById("btnLast").onclick   = () => pdfDoc && irAPagina(pdfDoc.numPages);
     document.getElementById("btnDownload").onclick = descargarPDF;
-    document.getElementById("btnIrPagina9").onclick = () => irAPagina(9);
-    document.getElementById("btnIrPagina21").onclick = () => irAPagina(21);
+
+    // FIX: botones del banner usan páginas físicas reales
+    document.getElementById("btnIrPagina9").onclick  = () => irAPagina(FISICA_INICIO);
+    document.getElementById("btnIrPagina21").onclick = () => irAPagina(FISICA_FIN);
 
     pageInput.addEventListener("change", () => {
       let val = parseInt(pageInput.value);
@@ -543,6 +551,11 @@
           let val = parseInt(jumpInput.value);
           if (!isNaN(val)) irAPagina(val);
         }
+      });
+      // FIX: también navegar al perder foco
+      jumpInput.addEventListener("blur", () => {
+        let val = parseInt(jumpInput.value);
+        if (!isNaN(val)) irAPagina(val);
       });
     }
 
@@ -577,7 +590,7 @@
       }
     });
 
-    // Mostrar modal al cargar la página
+    // Mostrar modal al cargar — la carga del PDF ya inicia dentro de mostrarModal()
     mostrarModal();
   </script>
 </body>
